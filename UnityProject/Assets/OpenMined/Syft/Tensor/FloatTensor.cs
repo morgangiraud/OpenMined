@@ -4,6 +4,7 @@ using UnityEngine;
 using OpenMined.Network.Utils;
 using OpenMined.Network.Controllers;
 using OpenMined.Syft.Tensor.Factories;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Tensor
 {
@@ -937,6 +938,10 @@ namespace OpenMined.Syft.Tensor
 
                         }
                     }
+                case "to_numpy_by_proto":
+                {
+                    return this.ToProto().ToString();
+                }
                 case "tan":
                 {
                     var result = Tan();
@@ -1182,6 +1187,31 @@ namespace OpenMined.Syft.Tensor
                     break;
             }
             return "FloatTensor.processMessage: Command not found:" + msgObj.functionCall;
+        }
+
+        public TensorProto ToProto()
+        {
+            // TensorProto t = base.ToProto();
+            float[] tmpData;
+            if (DataOnGpu)
+            {
+                tmpData = new float[size];
+                dataBuffer.GetData(tmpData);
+            }
+            else
+            {
+                tmpData = Data;
+            }
+            TensorProto t = new TensorProto
+            {   
+                Dims = { Array.ConvertAll(this.Shape, val => (long)val) },
+                DataType = TensorProto.Types.DataType.Float,
+                FloatData = { tmpData },
+                Name = this.Id.ToString(),
+                DocString = "",
+            };
+
+            return t;
         }
 
         public string Print()

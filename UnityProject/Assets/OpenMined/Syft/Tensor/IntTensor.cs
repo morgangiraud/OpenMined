@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using OpenMined.Syft.Tensor.Factories;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Tensor
 {
@@ -375,7 +376,7 @@ namespace OpenMined.Syft.Tensor
                 {
                     if (DataOnGpu)
                     {
-                        var tmpData = new float[size];
+                        var tmpData = new int[size];
                         dataBuffer.GetData(tmpData);
                         return string.Join(" ", tmpData);
 
@@ -409,8 +410,37 @@ namespace OpenMined.Syft.Tensor
                             return Transpose().Id.ToString();
                         }
                 }
+                case "to_numpy_by_proto":
+                {
+                    return this.ToProto().ToString();
+                }
             }
             return "IntTensor.processMessage: Command not found:" + msgObj.functionCall;
+        }
+
+        public TensorProto ToProto()
+        {
+            // TensorProto t = base.ToProto();
+            int[] tmpData;
+            if (DataOnGpu)
+            {
+                tmpData = new int[size];
+                dataBuffer.GetData(tmpData);
+            }
+            else
+            {
+                tmpData = Data;
+            }
+            TensorProto t = new TensorProto
+            {   
+                Dims = { Array.ConvertAll(this.Shape, val => (long)val) },
+                DataType = TensorProto.Types.DataType.Int32,
+                Int32Data = { tmpData },
+                Name = this.Id.ToString(),
+                DocString = "",
+            };
+
+            return t;
         }
 
     }
