@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using OpenMined.Network.Controllers;
 using OpenMined.Syft.Tensor;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Layer
 {
@@ -27,12 +29,13 @@ namespace OpenMined.Syft.Layer
             return output;
         }
 
+        public override int getParameterCount() { return 0; }
+
+        // Serialization
         public string GetLayerDefinition()
         {
             return JsonUtility.ToJson(this);
         }
-
-        public override int getParameterCount() { return 0; }
 
         public override JToken GetConfig()
         {
@@ -42,6 +45,30 @@ namespace OpenMined.Syft.Layer
             };
             
             return config;
+        }
+
+        // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Gemm
+        public override GraphProto GetProto(int input_tensor_id, SyftController ctrl)
+        {
+            FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
+            this.Forward(input_tensor);
+
+            NodeProto node = new NodeProto
+            {
+                Input = { input_tensor_id.ToString() },
+                Output = { activation.ToString() },
+                OpType = "relu",
+            };
+
+            GraphProto g =  new GraphProto
+            {
+                Node = { node },
+                Initializer = {  },
+                Input = {  },
+                Output = { ctrl.floatTensorFactory.Get(activation).GetValueInfoProto() },
+            };
+
+            return g;
         }
     }
 }

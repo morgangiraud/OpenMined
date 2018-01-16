@@ -3442,13 +3442,13 @@ namespace OpenMined.Tests.Editor.FloatTensorTests
         }
 
         [Test]
-        public void ToProto()
+        public void GetProto()
         {
             float[] data = {-1, 0, 1, float.MaxValue, float.MinValue};
             int[] shape = {5};
             Syft.Tensor.FloatTensor t = ctrl.floatTensorFactory.Create(_data: data, _shape: shape);
 
-            TensorProto message = t.ToProto();
+            TensorProto message = t.GetProto();
             byte[] messageAsByte = message.ToByteArray();
             TensorProto message2 = TensorProto.Parser.ParseFrom(messageAsByte);
 

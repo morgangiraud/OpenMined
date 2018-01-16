@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ using Agent = OpenMined.Syft.NN.RL.Agent;
 using OpenMined.Network.Servers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenMined.Protobuf.Onnx;
 using OpenMined.Network.Servers.BlockChain.Requests;
 using OpenMined.Network.Servers.BlockChain.Response;
 
@@ -535,8 +537,22 @@ namespace OpenMined.Network.Controllers
                                 response(model.Id.ToString());
                                 return;
 						}
-                            response("Unity Error: SyftController.processMessage: Command not found:" + msgObj.objectType + ":" + msgObj.functionCall);
-                            return;
+						else if (msgObj.functionCall == "model_from_onnx")
+						{
+							Debug.Log("Loading Model from ONNX:");
+							var filename = msgObj.tensorIndexParams[0];
+
+							var input = File.OpenRead(filename);
+							ModelProto modelProto = ModelProto.Parser.ParseFrom(input);
+						}
+						else if (msgObj.functionCall == "to_proto")
+						{
+							response(this.ToProto(msgObj.tensorIndexParams).ToString());
+              return;
+						}
+
+						response("Unity Error: SyftController.processMessage: Command not found:" + msgObj.objectType + ":" + msgObj.functionCall);
+            return;
 					}
                     case "Grid":
                         if (msgObj.functionCall == "learn")
@@ -579,6 +595,30 @@ namespace OpenMined.Network.Controllers
 
             response("Unity Error: SyftController.processMessage: Command not found:" + msgObj.objectType + ":" + msgObj.functionCall);
             return;
+		}
+
+		private ModelProto ToProto (string[] Params)
+		{
+			int model_id = int.Parse(Params[0]);
+			int input_tensor_id = int.Parse(Params[1]);
+
+			ModelProto m = new ModelProto
+			{
+			    IrVersion = 2,
+			    OpsetImport = { new OperatorSetIdProto
+			    {
+			        Domain = "", // operator set that is defined as part of the ONNX specification
+			        Version = 2
+			    }},
+			    ProducerName = "openmined",
+			    ProducerVersion = "0.0.2",
+			    Domain = "org.openmined",
+			    ModelVersion = 0,
+			    DocString = "",
+			    Graph = this.GetModel(model_id).GetProto(input_tensor_id, this),
+			};
+
+			return m;
 		}
 
 		private Sequential BuildSequential()

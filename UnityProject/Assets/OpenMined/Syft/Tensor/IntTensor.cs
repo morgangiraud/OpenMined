@@ -412,13 +412,13 @@ namespace OpenMined.Syft.Tensor
                 }
                 case "to_numpy_by_proto":
                 {
-                    return this.ToProto().ToString();
+                    return this.GetProto().ToString();
                 }
             }
             return "IntTensor.processMessage: Command not found:" + msgObj.functionCall;
         }
 
-        public TensorProto ToProto()
+        public TensorProto GetProto()
         {
             // TensorProto t = base.ToProto();
             int[] tmpData;
@@ -441,6 +441,27 @@ namespace OpenMined.Syft.Tensor
             };
 
             return t;
+        }
+
+        public ValueInfoProto GetValueInfoProto ()
+        {
+            ValueInfoProto i = new ValueInfoProto
+            {
+                Name = this.Id.ToString(),
+                Type = new TypeProto
+                {
+                    TensorType = new TypeProto.Types.Tensor
+                    {
+                        ElemType = TensorProto.Types.DataType.Int32,
+                        Shape = new TensorShapeProto
+                        {
+                            Dim = { Array.ConvertAll(this.Shape, val => new TensorShapeProto.Types.Dimension { DimValue = val }) }
+                        }
+                    }
+                }
+            };
+
+            return i;
         }
 
     }

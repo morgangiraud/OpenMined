@@ -940,7 +940,7 @@ namespace OpenMined.Syft.Tensor
                     }
                 case "to_numpy_by_proto":
                 {
-                    return this.ToProto().ToString();
+                    return this.GetProto().ToString();
                 }
                 case "tan":
                 {
@@ -1189,7 +1189,7 @@ namespace OpenMined.Syft.Tensor
             return "FloatTensor.processMessage: Command not found:" + msgObj.functionCall;
         }
 
-        public TensorProto ToProto()
+        public TensorProto GetProto ()
         {
             // TensorProto t = base.ToProto();
             float[] tmpData;
@@ -1212,6 +1212,27 @@ namespace OpenMined.Syft.Tensor
             };
 
             return t;
+        }
+
+        public ValueInfoProto GetValueInfoProto ()
+        {
+            ValueInfoProto i = new ValueInfoProto
+            {
+                Name = this.Id.ToString(),
+                Type = new TypeProto
+                {
+                    TensorType = new TypeProto.Types.Tensor
+                    {
+                        ElemType = TensorProto.Types.DataType.Float,
+                        Shape = new TensorShapeProto
+                        {
+                            Dim = { Array.ConvertAll(this.Shape, val => new TensorShapeProto.Types.Dimension { DimValue = val }) }
+                        }
+                    }
+                }
+            };
+
+            return i;
         }
 
         public string Print()

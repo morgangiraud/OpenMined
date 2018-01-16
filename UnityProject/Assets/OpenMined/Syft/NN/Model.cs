@@ -6,6 +6,7 @@ using OpenMined.Network.Controllers;
 using OpenMined.Network.Utils;
 using OpenMined.Syft.Tensor;
 using Newtonsoft.Json.Linq;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Layer
 {
@@ -135,6 +136,13 @@ namespace OpenMined.Syft.Layer
             {
                 { "backend", "Model.GetConfig not implemented" }
             };
+        }
+
+        public virtual GraphProto GetProto (int input_tensor_id, SyftController ctrl)
+        {
+            throw new NotImplementedException(
+                "Softmax Gradient does not support non-contiguous tensors at the moment!"
+            );
         }
     }
 }

@@ -584,13 +584,13 @@ namespace OpenMined.Tests.Editor.IntTensorTests
         }
 
         [Test]
-        public void ToProto()
+        public void GetProto()
         {
             int[] data = {-1, 0, 1, int.MaxValue, int.MinValue};
             int[] shape = {5};
             Syft.Tensor.IntTensor t = ctrl.intTensorFactory.Create(_data: data, _shape: shape);
 
-            TensorProto message = t.ToProto();
+            TensorProto message = t.GetProto();
             byte[] messageAsByte = message.ToByteArray();
             TensorProto message2 = TensorProto.Parser.ParseFrom(messageAsByte);
 
