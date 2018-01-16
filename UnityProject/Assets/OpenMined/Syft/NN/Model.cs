@@ -141,7 +141,7 @@ namespace OpenMined.Syft.Layer
         public virtual GraphProto GetProto (int input_tensor_id, SyftController ctrl)
         {
             throw new NotImplementedException(
-                "Softmax Gradient does not support non-contiguous tensors at the moment!"
+                "GetProto has not yet been implemented on this class"
             );
         }
     }

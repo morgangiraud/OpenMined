@@ -17,6 +17,7 @@ using OpenMined.Network.Servers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenMined.Protobuf.Onnx;
+using Google.Protobuf;
 using OpenMined.Network.Servers.BlockChain.Requests;
 using OpenMined.Network.Servers.BlockChain.Response;
 
@@ -547,7 +548,15 @@ namespace OpenMined.Network.Controllers
 						}
 						else if (msgObj.functionCall == "to_proto")
 						{
-							response(this.ToProto(msgObj.tensorIndexParams).ToString());
+							ModelProto model =  this.ToProto(msgObj.tensorIndexParams);
+							string filename = msgObj.tensorIndexParams[2];
+							// using (var output = new CodedOutputStream(File.Create(filename)))
+							// {	
+							// 	model.WriteTo(output);
+							// 	output.Flush();
+							// }
+							// new FileInfo(filename).FullName
+							response(model.ToString());
               return;
 						}
 
@@ -601,6 +610,7 @@ namespace OpenMined.Network.Controllers
 		{
 			int model_id = int.Parse(Params[0]);
 			int input_tensor_id = int.Parse(Params[1]);
+			Debug.Log("<color=yellow>Serialize to ONNX, model_id:" + model_id.ToString() + ", input_tensor_id:" + input_tensor_id.ToString() + "</color>");
 
 			ModelProto m = new ModelProto
 			{
@@ -615,7 +625,7 @@ namespace OpenMined.Network.Controllers
 			    Domain = "org.openmined",
 			    ModelVersion = 0,
 			    DocString = "",
-			    Graph = this.GetModel(model_id).GetProto(input_tensor_id, this),
+			    Graph = ((Sequential)this.GetModel(model_id)).GetProto(input_tensor_id, this),
 			};
 
 			return m;
