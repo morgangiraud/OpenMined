@@ -27,6 +27,19 @@ namespace OpenMined.Syft.Layer
 
 		}
 
+    public Dropout(SyftController _controller, GraphProto graph)
+    {
+      init(this.name);
+
+      this.controller = _controller;
+      this.rate = graph.Node[0].Attribute[0].F;
+
+      #pragma warning disable 420
+      id = System.Threading.Interlocked.Increment(ref nCreated);
+      controller.addModel(this);
+
+    }
+
 		public override FloatTensor Forward(FloatTensor input)
 		{
 			if (_mask_source == null || input.Size != _mask_source.Size)

@@ -538,13 +538,46 @@ namespace OpenMined.Network.Controllers
                                 response(model.Id.ToString());
                                 return;
 						}
-						else if (msgObj.functionCall == "model_from_onnx")
+						else if (msgObj.functionCall == "from_proto")
 						{
 							Debug.Log("Loading Model from ONNX:");
 							var filename = msgObj.tensorIndexParams[0];
 
 							var input = File.OpenRead(filename);
 							ModelProto modelProto = ModelProto.Parser.ParseFrom(input);
+
+							Sequential model = this.BuildSequential();
+
+							foreach (NodeProto node in modelProto.Graph.Node)
+							{
+								Layer layer;
+								GraphProto g = ONNXTools.GetSubGraphFromNodeAndMainGraph(node, modelProto.Graph);
+								if (node.OpType == "Gemm")
+								{
+									layer = new Linear(this, g);
+								}
+								else if (node.OpType == "Dropout")
+								{
+									layer = new Dropout(this, g);
+								}
+								else if (node.OpType == "Relu")
+								{
+									layer = new ReLU(this, g);
+								}
+								else if (node.OpType == "Softmax")
+								{
+									layer = new Softmax(this, g);
+								}
+								else
+								{
+									response("Unity Error: SyftController.processMessage: Layer not yet implemented for deserialization:");
+                  return;
+								}
+								model.AddLayer(layer);
+							}
+
+							response(model.Id.ToString());
+              return;
 						}
 						else if (msgObj.functionCall == "to_proto")
 						{

@@ -1,9 +1,12 @@
-﻿using OpenMined.Network.Controllers;
+﻿using System;
+using System.Collections.Generic;
+using OpenMined.Network.Controllers;
 using OpenMined.Syft.Tensor;
 using UnityEngine;
 using OpenMined.Network.Servers;
 using Newtonsoft.Json.Linq;
 using OpenMined.Protobuf.Onnx;
+using Google.Protobuf.Collections;
 
 namespace OpenMined.Syft.Layer
 {
@@ -75,9 +78,67 @@ namespace OpenMined.Syft.Layer
             controller.addModel(this);
         }
 
-        public override FloatTensor Forward(FloatTensor input)
-        {
+		// Overloading the constructor to load from an ONNX proto
+		public Linear (SyftController _controller, GraphProto graph)
+		{
+      init(this.name);
+
+			this.controller = _controller;
+
+			long[] longWeightShape = new long[graph.Initializer[0].Dims.Count];
+			graph.Initializer[0].Dims.CopyTo(longWeightShape, 0);
+			int[] weightShape = Array.ConvertAll(longWeightShape, val => (int) val);
+			Array.Reverse(weightShape);
+			float[] weightData;
+			if (graph.Initializer[0].FloatData.Count == 0)
+			{
+				byte[] tmpData = graph.Initializer[0].RawData.ToByteArray();
+				weightData = new float[tmpData.Length / 4];
+				Buffer.BlockCopy(tmpData, 0, weightData, 0, tmpData.Length);
+			}
+			else
+			{
+				weightData = new float[graph.Initializer[0].FloatData.Count];
+				graph.Initializer[0].FloatData.CopyTo(weightData, 0);
+			}
+
+			if(graph.Initializer[1].Dims.Count == 1)
+			{
+				graph.Initializer[1].Dims.Insert(0, 1);
+			}
+			long[] longBiasShape = new long[graph.Initializer[1].Dims.Count];
+			graph.Initializer[1].Dims.CopyTo(longBiasShape, 0);
+			int[] biasShape = Array.ConvertAll(longBiasShape, val => (int) val);
+			float[] biasData;
+			if (graph.Initializer[0].FloatData.Count == 0)
+			{
+				byte[] tmpData = graph.Initializer[1].RawData.ToByteArray();
+				biasData = new float[tmpData.Length / 4];
+				Buffer.BlockCopy(tmpData, 0, biasData, 0, tmpData.Length);
+			}
+			else
+			{
+				biasData = new float[graph.Initializer[1].FloatData.Count];
+				graph.Initializer[1].FloatData.CopyTo(biasData, 0);
+			}
 			
+			_input = weightShape[0];
+			_output = weightShape[1];
+			
+			_weights = controller.floatTensorFactory.Create(_shape: weightShape, _data: weightData, _autograd: true, _keepgrads: true);
+			_bias = controller.floatTensorFactory.Create(_shape:biasShape, _data: biasData, _autograd: true);
+
+			parameters.Add(_weights.Id);
+			parameters.Add(_bias.Id);
+			
+			#pragma warning disable 420
+			id = System.Threading.Interlocked.Increment(ref nCreated);
+			controller.addModel(this);
+		}
+
+
+    public override FloatTensor Forward(FloatTensor input)
+		{	
 			FloatTensor output = input.MM(_weights);
             if (_biased)
             {

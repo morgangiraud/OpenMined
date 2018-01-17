@@ -16,7 +16,16 @@ namespace OpenMined.Syft.Layer
         {
             init(this.name);
 
-#pragma warning disable 420
+            #pragma warning disable 420
+            id = System.Threading.Interlocked.Increment(ref nCreated);
+            controller.addModel(this);
+        }
+
+        public ReLU(SyftController controller, GraphProto graph)
+        {
+            init(this.name);
+
+            #pragma warning disable 420
             id = System.Threading.Interlocked.Increment(ref nCreated);
             controller.addModel(this);
         }

@@ -24,6 +24,17 @@ namespace OpenMined.Syft.Layer
             controller.addModel(this);
         }
 
+        public Softmax(SyftController controller, GraphProto graph)
+        {
+            init(this.name);
+
+            this.dim = (int) graph.Node[0].Attribute[0].I;
+            
+            #pragma warning disable 420
+            id = System.Threading.Interlocked.Increment(ref nCreated);
+            controller.addModel(this);
+        }
+
         public override FloatTensor Forward(FloatTensor input)
         {
             FloatTensor output = input.Softmax(this.dim);
