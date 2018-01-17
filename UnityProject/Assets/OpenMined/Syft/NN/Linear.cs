@@ -178,7 +178,6 @@ namespace OpenMined.Syft.Layer
 				I = 1
 			});
 
-			TensorProto input_init = input_tensor.GetProto();
 			TensorProto w_init = _weights.GetProto();
 			TensorProto b_init = _bias.GetProto();
 
@@ -189,7 +188,7 @@ namespace OpenMined.Syft.Layer
 			GraphProto g =  new GraphProto
 			{
 				Node = { node },
-				Initializer = { input_init, w_init, b_init },
+				Initializer = { w_init, b_init },
 				Input = { input_info, w_info, b_info },
 				Output = { ctrl.floatTensorFactory.Get(activation).GetValueInfoProto() },
 			};

@@ -181,20 +181,17 @@ namespace OpenMined.Syft.Layer
             for (int i = 0; i < this.layers.Count; i++)
             {   
                 GraphProto l = controller.GetModel(this.layers[i]).GetProto(input_tensor_id, ctrl);
+                if (i != 0)
+                {
+                    l.Input.RemoveAt(0);
+                }
                 input_tensor_id = int.Parse(l.Node[0].Output[0]);
-                if (i == 0)
+
+                if (i != this.layers.Count - 1)
                 {
                     l.Output.Clear();
                 }
-                else if (i == this.layers.Count - 1)
-                {
-                    l.Input.Clear();
-                }
-                else
-                {
-                    l.Input.Clear();
-                    l.Output.Clear();
-                }
+
                 g.MergeFrom(l);
             }
             

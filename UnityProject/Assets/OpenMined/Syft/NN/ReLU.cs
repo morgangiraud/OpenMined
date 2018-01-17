@@ -47,7 +47,7 @@ namespace OpenMined.Syft.Layer
             return config;
         }
 
-        // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Gemm
+        // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Relu
         public override GraphProto GetProto(int input_tensor_id, SyftController ctrl)
         {
             FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
@@ -57,14 +57,16 @@ namespace OpenMined.Syft.Layer
             {
                 Input = { input_tensor_id.ToString() },
                 Output = { activation.ToString() },
-                OpType = "relu",
+                OpType = "Relu",
             };
 
+            ValueInfoProto input_info = input_tensor.GetValueInfoProto();
+            
             GraphProto g =  new GraphProto
             {
                 Node = { node },
                 Initializer = {  },
-                Input = {  },
+                Input = { input_info },
                 Output = { ctrl.floatTensorFactory.Get(activation).GetValueInfoProto() },
             };
 
