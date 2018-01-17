@@ -3,6 +3,7 @@ using OpenMined.Network.Controllers;
 using OpenMined.Syft.Tensor;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Layer
 {
@@ -47,6 +48,36 @@ namespace OpenMined.Syft.Layer
             };
 
             return config;
+        }
+
+        public override GraphProto GetProto(int input_tensor_id, SyftController ctrl)
+        {
+            FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
+            this.Forward(input_tensor);
+
+            NodeProto node = new NodeProto
+            {
+                Input = { input_tensor_id.ToString() },
+                Output = { activation.ToString() },
+                OpType = "Softmax",
+                Attribute = { new AttributeProto{
+                    Name = "axis",
+                    Type = AttributeProto.Types.AttributeType.Int,
+                    I = this.dim
+                }}
+            };
+
+            ValueInfoProto input_info = input_tensor.GetValueInfoProto();
+
+            GraphProto g =  new GraphProto
+            {
+                Node = { node },
+                Initializer = {  },
+                Input = { input_info },
+                Output = { ctrl.floatTensorFactory.Get(activation).GetValueInfoProto() },
+            };
+
+            return g;            
         }
     }
 }
