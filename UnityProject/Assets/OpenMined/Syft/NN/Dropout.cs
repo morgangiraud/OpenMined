@@ -3,6 +3,7 @@ using OpenMined.Syft.Tensor;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenMined.Protobuf.Onnx;
 
 namespace OpenMined.Syft.Layer
 {
@@ -42,20 +43,61 @@ namespace OpenMined.Syft.Layer
 		
 		public override int getParameterCount(){return 0;}
 
-        public string GetLayerDefinition()
-        {
-            return JsonUtility.ToJson(this);
-        }
+    public string GetLayerDefinition()
+    {
+        return JsonUtility.ToJson(this);
+    }
 
-        public override JToken GetConfig()
+    public override JToken GetConfig()
+    {
+        var config = new JObject
         {
-            var config = new JObject
-            {
-                { "name", "dropout" },
-                { "rate" , rate }
-            };
+            { "name", "dropout" },
+            { "rate" , rate }
+        };
 
-            return config;
-        }
-	}
+        return config;
+    }
+
+    // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Dropout
+    public override GraphProto GetProto (int input_tensor_id, SyftController ctrl)
+    {
+      FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
+      this.Forward(input_tensor);
+
+      NodeProto node = new NodeProto
+      {
+        Input = { input_tensor_id.ToString() },
+        Output = { activation.ToString(), _mask_source.Id.ToString() },
+        Name = this.name,
+        OpType = "Dropout",
+        DocString = ""
+      };
+      node.Attribute.Add(new AttributeProto{
+        Name = "ratio",
+        Type = AttributeProto.Types.AttributeType.Float,
+        F = this.rate
+      });
+      node.Attribute.Add(new AttributeProto{
+        Name = "is_test",
+        Type = AttributeProto.Types.AttributeType.Int,
+        I = 1
+      });
+
+      ValueInfoProto input_info = input_tensor.GetValueInfoProto();
+
+      GraphProto g =  new GraphProto
+      {
+        Node = { node },
+        Initializer = {  },
+        Input = { input_info },
+        Output = { 
+          ctrl.floatTensorFactory.Get(activation).GetValueInfoProto(),
+          _mask_source.GetValueInfoProto()
+        },
+      };
+
+      return g;
+    }
+  }
 }
