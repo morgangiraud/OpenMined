@@ -89,11 +89,6 @@ namespace OpenMined.Syft.Layer
 			long[] longWeightShape = new long[graph.Initializer[0].Dims.Count];
 			graph.Initializer[0].Dims.CopyTo(longWeightShape, 0);
 			int[] weightShape = Array.ConvertAll(longWeightShape, val => (int) val);
-			AttributeProto transB = ONNXTools.FindAttribute(graph.Node[0], "transB");
-			if (transB != null && transB.I == 1)
-			{
-				Array.Reverse(weightShape);	
-			}
 			
 			float[] weightData;
 			if (graph.Initializer[0].FloatData.Count == 0)
@@ -106,6 +101,13 @@ namespace OpenMined.Syft.Layer
 			{
 				weightData = new float[graph.Initializer[0].FloatData.Count];
 				graph.Initializer[0].FloatData.CopyTo(weightData, 0);
+			}
+
+			_weights = controller.floatTensorFactory.Create(_shape: weightShape, _data: weightData, _autograd: true, _keepgrads: true);
+			AttributeProto transB = ONNXTools.FindAttribute(graph.Node[0], "transB");
+			if (transB != null && transB.I == 1)
+			{
+				_weights = _weights.Transpose();
 			}
 
 			if(graph.Initializer[1].Dims.Count == 1)
@@ -128,12 +130,11 @@ namespace OpenMined.Syft.Layer
 				biasData = new float[graph.Initializer[1].FloatData.Count];
 				graph.Initializer[1].FloatData.CopyTo(biasData, 0);
 			}
+
+			_bias = controller.floatTensorFactory.Create(_shape:biasShape, _data: biasData, _autograd: true);
 			
 			_input = weightShape[0];
 			_output = weightShape[1];
-			
-			_weights = controller.floatTensorFactory.Create(_shape: weightShape, _data: weightData, _autograd: true, _keepgrads: true);
-			_bias = controller.floatTensorFactory.Create(_shape:biasShape, _data: biasData, _autograd: true);
 
 			parameters.Add(_weights.Id);
 			parameters.Add(_bias.Id);
