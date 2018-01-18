@@ -639,11 +639,11 @@ namespace OpenMined.Network.Controllers
             return;
 		}
 
-		private ModelProto ToProto (string[] Params)
+		private ModelProto ToProto (string[] parameters)
 		{
-			int model_id = int.Parse(Params[0]);
-			int input_tensor_id = int.Parse(Params[1]);
-			Debug.Log("<color=yellow>Serialize to ONNX, model_id:" + model_id.ToString() + ", input_tensor_id:" + input_tensor_id.ToString() + "</color>");
+			int modelId = int.Parse(parameters[0]);
+			int inputTensorId = int.Parse(parameters[1]);
+			Debug.Log("<color=yellow>Serialize to ONNX, modelId:" + modelId.ToString() + ", inputTensorId:" + inputTensorId.ToString() + "</color>");
 
 			ModelProto m = new ModelProto
 			{
@@ -658,7 +658,7 @@ namespace OpenMined.Network.Controllers
 			    Domain = "org.openmined",
 			    ModelVersion = 0,
 			    DocString = "",
-			    Graph = ((Sequential)this.GetModel(model_id)).GetProto(input_tensor_id, this),
+			    Graph = ((Sequential)this.GetModel(modelId)).GetProto(inputTensorId, this),
 			};
 
 			return m;
@@ -669,18 +669,18 @@ namespace OpenMined.Network.Controllers
 			return new Sequential(this);
 		}
 
-		private Linear BuildLinear(string[] Params)
+		private Linear BuildLinear(string[] parameters)
 		{
-			int input = int.Parse(Params[1]);
-			int output = int.Parse(Params[2]);
-			string initializer =  Params[3];
+			int input = int.Parse(parameters[1]);
+			int output = int.Parse(parameters[2]);
+			string initializer =  parameters[3];
 
 			return new Linear(this, input, output, initializer);
 		}
 
-		private Dropout BuildDropout(string[] Params)
+		private Dropout BuildDropout(string[] parameters)
 		{
-			float rate = float.Parse(Params[1]);
+			float rate = float.Parse(parameters[1]);
 
 			return new Dropout(this, rate);
 		}
@@ -700,15 +700,15 @@ namespace OpenMined.Network.Controllers
 			return new Sigmoid(this);
 		}
 
-		private Softmax BuildSoftmax(string[] Params)
+		private Softmax BuildSoftmax(string[] parameters)
 		{
-			int reduction_dim = int.Parse(Params[1]);
+			int reduction_dim = int.Parse(parameters[1]);
 			return new Softmax(this, reduction_dim);
 		}
 
-		private LogSoftmax BuildLogSoftmax(string[] Params)
+		private LogSoftmax BuildLogSoftmax(string[] parameters)
 		{
-			int reduction_dim = int.Parse(Params[1]);
+			int reduction_dim = int.Parse(parameters[1]);
 			return new LogSoftmax(this, reduction_dim);
 		}
     }

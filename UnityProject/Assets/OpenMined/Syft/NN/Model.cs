@@ -138,7 +138,7 @@ namespace OpenMined.Syft.Layer
             };
         }
 
-        public virtual GraphProto GetProto (int input_tensor_id, SyftController ctrl)
+        public virtual GraphProto GetProto (int inputTensorId, SyftController ctrl)
         {
             throw new NotImplementedException(
                 "GetProto has not yet been implemented on this class"

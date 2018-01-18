@@ -175,17 +175,17 @@ namespace OpenMined.Syft.Layer
             return config;
         }
 
-        public GraphProto GetProto (int input_tensor_id, SyftController ctrl)
+        public GraphProto GetProto (int inputTensorId, SyftController ctrl)
         {
             GraphProto g = new GraphProto();
             for (int i = 0; i < this.layers.Count; i++)
             {   
-                GraphProto l = controller.GetModel(this.layers[i]).GetProto(input_tensor_id, ctrl);
+                GraphProto l = controller.GetModel(this.layers[i]).GetProto(inputTensorId, ctrl);
                 if (i != 0)
                 {
                     l.Input.RemoveAt(0);
                 }
-                input_tensor_id = int.Parse(l.Node[0].Output[0]);
+                inputTensorId = int.Parse(l.Node[0].Output[0]);
 
                 if (i != this.layers.Count - 1)
                 {

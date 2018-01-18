@@ -85,10 +85,16 @@ namespace OpenMined.Syft.Layer
 
 			this.controller = _controller;
 
+
 			long[] longWeightShape = new long[graph.Initializer[0].Dims.Count];
 			graph.Initializer[0].Dims.CopyTo(longWeightShape, 0);
 			int[] weightShape = Array.ConvertAll(longWeightShape, val => (int) val);
-			Array.Reverse(weightShape);
+			AttributeProto transB = ONNXTools.FindAttribute(graph.Node[0], "transB");
+			if (transB != null && transB.I == 1)
+			{
+				Array.Reverse(weightShape);	
+			}
+			
 			float[] weightData;
 			if (graph.Initializer[0].FloatData.Count == 0)
 			{
@@ -109,6 +115,7 @@ namespace OpenMined.Syft.Layer
 			long[] longBiasShape = new long[graph.Initializer[1].Dims.Count];
 			graph.Initializer[1].Dims.CopyTo(longBiasShape, 0);
 			int[] biasShape = Array.ConvertAll(longBiasShape, val => (int) val);
+			
 			float[] biasData;
 			if (graph.Initializer[0].FloatData.Count == 0)
 			{
@@ -205,14 +212,14 @@ namespace OpenMined.Syft.Layer
 		}
 
 		// See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Gemm
-		public override GraphProto GetProto (int input_tensor_id, SyftController ctrl)
+		public override GraphProto GetProto (int inputTensorId, SyftController ctrl)
 		{
-			FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
+			FloatTensor input_tensor = ctrl.floatTensorFactory.Get(inputTensorId);
 			this.Forward(input_tensor);
 
 			NodeProto node = new NodeProto
 			{
-				Input = { input_tensor_id.ToString(), _weights.Id.ToString(), _bias.Id.ToString() },
+				Input = { inputTensorId.ToString(), _weights.Id.ToString(), _bias.Id.ToString() },
 				Output = { activation.ToString() },
 				Name = this.name,
 				OpType = "Gemm",
@@ -236,7 +243,7 @@ namespace OpenMined.Syft.Layer
 			node.Attribute.Add(new AttributeProto{
 				Name = "transB",
 				Type = AttributeProto.Types.AttributeType.Int,
-				I = 1
+				I = 0
 			});
 
 			TensorProto w_init = _weights.GetProto();

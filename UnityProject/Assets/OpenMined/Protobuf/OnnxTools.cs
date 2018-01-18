@@ -42,5 +42,12 @@ namespace OpenMined.Protobuf.Onnx
 
             return g;
         }
+
+        public static AttributeProto FindAttribute(NodeProto node, string name)
+        {
+            List<AttributeProto> allAttr = new List<AttributeProto>(node.Attribute);   
+
+            return allAttr.Find(x => x.Name == name);
+        }
     }
 }

@@ -57,14 +57,14 @@ namespace OpenMined.Syft.Layer
         }
 
         // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Relu
-        public override GraphProto GetProto(int input_tensor_id, SyftController ctrl)
+        public override GraphProto GetProto(int inputTensorId, SyftController ctrl)
         {
-            FloatTensor input_tensor = ctrl.floatTensorFactory.Get(input_tensor_id);
+            FloatTensor input_tensor = ctrl.floatTensorFactory.Get(inputTensorId);
             this.Forward(input_tensor);
 
             NodeProto node = new NodeProto
             {
-                Input = { input_tensor_id.ToString() },
+                Input = { inputTensorId.ToString() },
                 Output = { activation.ToString() },
                 OpType = "Relu",
             };
