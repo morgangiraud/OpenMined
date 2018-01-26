@@ -175,9 +175,10 @@ namespace OpenMined.Syft.Layer
             return config;
         }
 
-        public GraphProto GetProto (int inputTensorId, SyftController ctrl)
+        public override GraphProto GetProto (int inputTensorId, SyftController ctrl)
         {
             GraphProto g = new GraphProto();
+            g.Name = Guid.NewGuid().ToString("N");
             for (int i = 0; i < this.layers.Count; i++)
             {   
                 GraphProto l = controller.GetModel(this.layers[i]).GetProto(inputTensorId, ctrl);

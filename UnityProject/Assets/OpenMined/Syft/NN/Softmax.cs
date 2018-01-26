@@ -64,7 +64,10 @@ namespace OpenMined.Syft.Layer
         public override GraphProto GetProto(int inputTensorId, SyftController ctrl)
         {
             FloatTensor input_tensor = ctrl.floatTensorFactory.Get(inputTensorId);
-            this.Forward(input_tensor);
+            if (activation != null)
+            {
+                this.Forward(input_tensor);
+            }
 
             NodeProto node = new NodeProto
             {
@@ -82,6 +85,7 @@ namespace OpenMined.Syft.Layer
 
             GraphProto g =  new GraphProto
             {
+                Name = Guid.NewGuid().ToString("N"),
                 Node = { node },
                 Initializer = {  },
                 Input = { input_info },

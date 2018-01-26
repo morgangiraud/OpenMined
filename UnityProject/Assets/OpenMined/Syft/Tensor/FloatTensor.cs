@@ -1191,7 +1191,6 @@ namespace OpenMined.Syft.Tensor
 
         public TensorProto GetProto ()
         {
-            // TensorProto t = base.ToProto();
             float[] tmpData;
             if (DataOnGpu)
             {

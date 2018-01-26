@@ -1,3 +1,4 @@
+using System;
 using OpenMined.Network.Controllers;
 using OpenMined.Syft.Tensor;
 using UnityEngine;
@@ -101,6 +102,7 @@ namespace OpenMined.Syft.Layer
 
       GraphProto g =  new GraphProto
       {
+        Name = Guid.NewGuid().ToString("N"),
         Node = { node },
         Initializer = {  },
         Input = { input_info },
