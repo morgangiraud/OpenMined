@@ -583,13 +583,19 @@ namespace OpenMined.Network.Controllers
 						{
 							ModelProto model =  this.ToProto(msgObj.tensorIndexParams);
 							string filename = msgObj.tensorIndexParams[2];
-							// using (var output = new CodedOutputStream(File.Create(filename)))
-							// {	
-							// 	model.WriteTo(output);
-							// 	output.Flush();
-							// }
-							// new FileInfo(filename).FullName
-							response(model.ToString());
+              string type = msgObj.tensorIndexParams[3];
+              if (type == "json")
+              {
+                response(model.ToString()); 
+              }
+              else
+              { 
+                using (var output = File.Create(filename))
+                {  
+                 model.WriteTo(output);
+                }
+                response(new FileInfo(filename).FullName);
+              }
               return;
 						}
 
@@ -645,6 +651,7 @@ namespace OpenMined.Network.Controllers
 			int inputTensorId = int.Parse(parameters[1]);
 			Debug.Log("<color=yellow>Serialize to ONNX, modelId:" + modelId.ToString() + ", inputTensorId:" + inputTensorId.ToString() + "</color>");
 
+      Model model = this.GetModel(modelId);
 			ModelProto m = new ModelProto
 			{
 			    IrVersion = 2,
@@ -658,7 +665,7 @@ namespace OpenMined.Network.Controllers
 			    Domain = "org.openmined",
 			    ModelVersion = 0,
 			    DocString = "",
-			    Graph = ((Sequential)this.GetModel(modelId)).GetProto(inputTensorId, this),
+			    Graph = model.GetProto(inputTensorId, this),
 			};
 
 			return m;
